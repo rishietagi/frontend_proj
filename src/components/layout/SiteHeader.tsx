@@ -17,12 +17,13 @@ export const SiteHeader = forwardRef<HTMLButtonElement, SiteHeaderProps>(functio
   cartRef
 ) {
   return (
-    <header className="sticky top-0 z-40 px-3 pt-3 sm:px-6 sm:pt-4">
-      <div className="aero-glass mx-auto flex max-w-6xl items-center justify-between gap-3 rounded-full py-2 pr-2 pl-3 sm:pl-4">
+    // No bar: two floating glass pills pinned to the same edges as the content.
+    <header className="pointer-events-none sticky top-0 z-40 pt-[max(0.75rem,env(safe-area-inset-top))] sm:pt-[max(1rem,env(safe-area-inset-top))]">
+      <div className="shell flex items-center justify-between gap-3">
         <button
           type="button"
           onClick={onHome}
-          className="rounded-full py-1 pr-2 transition-transform duration-200 active:scale-[0.97]"
+          className="aero-chip pointer-events-auto h-12 rounded-full pr-5 pl-2.5 backdrop-blur-md transition-transform duration-200 active:scale-[0.97]"
           aria-label="Rishi’s Kitchen — back to the welcome screen"
         >
           <Wordmark />
@@ -33,7 +34,7 @@ export const SiteHeader = forwardRef<HTMLButtonElement, SiteHeaderProps>(functio
           type="button"
           onClick={onOpenCart}
           aria-label={`Open cart, ${pluralItems(itemCount)}`}
-          className="aero-ghost relative inline-flex h-12 items-center gap-2 rounded-full pr-5 pl-4 font-heading text-[1.05rem] font-bold"
+          className="aero-ghost pointer-events-auto relative inline-flex h-12 items-center gap-2 rounded-full pr-4 pl-4 font-heading text-[1.05rem] font-bold backdrop-blur-md"
         >
           <ShoppingBag className="size-5 text-ocean-ink" aria-hidden="true" />
           <span className="max-sm:sr-only">Cart</span>

@@ -2,22 +2,31 @@ import { useCallback, useEffect, useState } from "react"
 import { AnimatePresence, motion, MotionConfig } from "motion/react"
 
 import { AquaBackdrop } from "@/components/atmosphere/AquaBackdrop"
+import { CartProvider } from "@/components/cart/CartProvider"
 import { OrderConfirmation } from "@/components/confirmation/OrderConfirmation"
+import { AeroLoader } from "@/components/layout/AeroLoader"
 import { MenuScreen } from "@/components/menu/MenuScreen"
 import { WelcomeScreen } from "@/components/welcome/WelcomeScreen"
-import { CartProvider } from "@/components/cart/CartProvider"
 import { useCart } from "@/hooks/useCart"
 import { createOrderSnapshot } from "@/lib/cart"
-import { screenVariants } from "@/lib/motion"
+import { RESPECT_REDUCED_MOTION, screenVariants } from "@/lib/motion"
 import type { OrderSnapshot } from "@/types/menu"
 
 type Screen = "welcome" | "menu" | "confirmation"
 
 const ORDER: Record<Screen, number> = { welcome: 0, menu: 1, confirmation: 2 }
 
+function loaderLabel(from: Screen, to: Screen): string {
+  if (to === "confirmation") return "Placing your order"
+  if (to === "welcome") return "Heading back"
+  return from === "confirmation" ? "Back to the menu" : "Setting the table"
+}
+
 function Experience() {
-  const { rawLines, itemCount, clear } = useCart()
+  const { rawLines, itemCount, discountPercent, clear } = useCart()
   const [screen, setScreen] = useState<Screen>("welcome")
+  // While set, the loader is showing on the way to this screen.
+  const [loadingTo, setLoadingTo] = useState<Screen | null>(null)
   const [direction, setDirection] = useState(1)
   const [order, setOrder] = useState<OrderSnapshot | null>(null)
   // Focus moves to each new screen's heading, but not on the first page load.
@@ -25,27 +34,37 @@ function Experience() {
 
   const go = useCallback(
     (next: Screen) => {
+      if (loadingTo) return
       setNavigated(true)
       setDirection(ORDER[next] >= ORDER[screen] ? 1 : -1)
-      setScreen(next)
+      setLoadingTo(next)
     },
-    [screen]
+    [screen, loadingTo]
   )
 
-  // Each screen starts at the top.
+  const finishLoading = useCallback(() => {
+    if (!loadingTo) return
+    setScreen(loadingTo)
+    setLoadingTo(null)
+  }, [loadingTo])
+
+  // Each screen (and the loader) starts at the top.
   useEffect(() => {
     window.scrollTo({ top: 0 })
-  }, [screen])
+  }, [screen, loadingTo])
 
   const placeOrder = useCallback(() => {
-    const snapshot = createOrderSnapshot(rawLines)
+    const snapshot = createOrderSnapshot(rawLines, discountPercent)
     if (!snapshot) return false
     setOrder(snapshot)
     go("confirmation")
     return true
-  }, [rawLines, go])
+  }, [rawLines, discountPercent, go])
 
   const handleConfirmationShown = useCallback(() => clear(), [clear])
+
+  const view = loadingTo ? "loading" : screen
+  const scene = view === "welcome" || loadingTo === "welcome" ? "meadow" : "aqua"
 
   return (
     <>
@@ -56,32 +75,35 @@ function Experience() {
         Skip to content
       </a>
 
-      <AquaBackdrop />
+      <AquaBackdrop scene={scene} />
 
       <AnimatePresence mode="wait" custom={direction} initial={false}>
         <motion.div
-          key={screen}
+          key={view}
           custom={direction}
           variants={screenVariants}
           initial="initial"
           animate="animate"
           exit="exit"
         >
-          {screen === "welcome" && (
+          {loadingTo && (
+            <AeroLoader label={loaderLabel(screen, loadingTo)} onDone={finishLoading} />
+          )}
+          {!loadingTo && screen === "welcome" && (
             <WelcomeScreen
               onOrder={() => go("menu")}
               savedCount={itemCount}
               focusOnMount={navigated}
             />
           )}
-          {screen === "menu" && (
+          {!loadingTo && screen === "menu" && (
             <MenuScreen
               onHome={() => go("welcome")}
               onPlaceOrder={placeOrder}
               focusOnMount={navigated}
             />
           )}
-          {screen === "confirmation" && order && (
+          {!loadingTo && screen === "confirmation" && order && (
             <OrderConfirmation
               order={order}
               onShown={handleConfirmationShown}
@@ -96,8 +118,12 @@ function Experience() {
 }
 
 export default function App() {
+  useEffect(() => {
+    document.documentElement.classList.toggle("respect-reduced-motion", RESPECT_REDUCED_MOTION)
+  }, [])
+
   return (
-    <MotionConfig reducedMotion="user">
+    <MotionConfig reducedMotion={RESPECT_REDUCED_MOTION ? "user" : "never"}>
       <CartProvider>
         <Experience />
       </CartProvider>

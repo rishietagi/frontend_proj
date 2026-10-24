@@ -1,10 +1,11 @@
 import { useEffect, useMemo } from "react"
-import { motion, useReducedMotion } from "motion/react"
+import { motion } from "motion/react"
 
 import { Wordmark } from "@/components/brand/Brand"
 import { DishName } from "@/components/menu/DishName"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { useCalmMotion } from "@/hooks/useCalmMotion"
 import { useScreenFocus } from "@/hooks/useScreenFocus"
 import { formatPrice, pluralItems } from "@/lib/format"
 import { easeOut, riseIn, stagger } from "@/lib/motion"
@@ -29,7 +30,7 @@ export function OrderConfirmation({ order, onShown, onBackToMenu, onHome }: Orde
   }, [onShown])
 
   return (
-    <main id="main" className="relative flex min-h-dvh flex-col items-center px-4 pt-8 pb-16 sm:px-6 sm:pt-10">
+    <main id="main" className="shell relative flex min-h-dvh flex-col items-center pt-[max(2rem,env(safe-area-inset-top))] pb-[max(4rem,env(safe-area-inset-bottom))] sm:pt-10">
       <div className="mb-8 sm:mb-10">
         <Wordmark />
       </div>
@@ -96,6 +97,19 @@ export function OrderConfirmation({ order, onShown, onBackToMenu, onHome }: Orde
 
           <Separator className="aero-rule my-5" />
 
+          {order.discountPercent > 0 && (
+            <dl className="tabular mb-3 space-y-1.5 text-[1rem]">
+              <div className="flex justify-between text-deep-soft">
+                <dt>Subtotal</dt>
+                <dd className="font-semibold text-deep">{formatPrice(order.subtotal)}</dd>
+              </div>
+              <div className="flex justify-between text-leaf-ink">
+                <dt className="font-semibold">Discount availed ({order.discountPercent}%)</dt>
+                <dd className="font-bold">−{formatPrice(order.discountAmount)}</dd>
+              </div>
+            </dl>
+          )}
+
           <div className="flex items-baseline justify-between">
             <p className="font-heading text-xl font-bold text-deep">
               Total <span className="font-sans text-base font-medium text-deep-soft">({pluralItems(order.itemCount)})</span>
@@ -105,9 +119,6 @@ export function OrderConfirmation({ order, onShown, onBackToMenu, onHome }: Orde
             </p>
           </div>
 
-          <p className="mt-5 rounded-2xl bg-white/55 px-4 py-3 text-[0.95rem] leading-snug text-deep-soft shadow-[inset_0_0_0_1px_rgb(255_255_255/0.8)]">
-            This order lives on this screen only, so bring it to the kitchen and show Rishi what you&rsquo;re having.
-          </p>
         </motion.section>
 
         <motion.div variants={riseIn} className="mt-8 flex w-full flex-col items-center gap-3 sm:flex-row sm:justify-center">
@@ -125,7 +136,7 @@ export function OrderConfirmation({ order, onShown, onBackToMenu, onHome }: Orde
 
 /** Glass orb + drawn check, two ripples and one restrained bubble burst. */
 function CelebrationOrb() {
-  const reduce = useReducedMotion()
+  const reduce = useCalmMotion()
 
   const particles = useMemo(
     () =>

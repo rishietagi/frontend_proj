@@ -33,7 +33,7 @@ export function DishImage({ item, sizes, className, eager }: DishImageProps) {
           <UtensilsCrossed className="size-7" aria-hidden="true" />
         </span>
         <span className="font-heading text-lg font-bold text-deep">{item.name}</span>
-        <span className="text-sm text-deep-soft">Photo unavailable — the real thing is better anyway.</span>
+        <span className="text-sm text-deep-soft">Photo unavailable</span>
       </div>
     )
   }

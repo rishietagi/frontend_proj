@@ -16,11 +16,10 @@ import { QuantityStepper } from "./QuantityStepper"
 
 interface MenuCardProps {
   item: MenuItem
-  featured?: boolean
   onAdded?: (from: DOMRect, item: MenuItem) => void
 }
 
-export function MenuCard({ item, featured = false, onAdded }: MenuCardProps) {
+export function MenuCard({ item, onAdded }: MenuCardProps) {
   const { quantityOf, add, increment, decrement } = useCart()
   const quantity = quantityOf(item.id)
   const inCart = quantity > 0
@@ -44,20 +43,21 @@ export function MenuCard({ item, featured = false, onAdded }: MenuCardProps) {
         hidden: { opacity: 0, y: 40, scale: 0.97 },
         show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.75, ease: easeOut } },
       }}
-      className={cn("relative", featured && "lg:z-10")}
+      // On desktop each card spans five shared rows (photo, label, title,
+      // description, price) via subgrid, so all three cards line up exactly.
+      className="relative lg:row-span-5 lg:grid lg:grid-rows-subgrid"
     >
       <motion.div
         whileHover={{ y: -6 }}
         transition={spring}
-        className="h-full"
+        className="h-full lg:row-span-5 lg:grid lg:grid-rows-subgrid"
       >
         <Card
           data-in-cart={inCart}
           className={cn(
             "aero-glass h-full gap-0 overflow-visible bg-transparent p-2.5 text-base ring-0 sm:p-3",
-            "rounded-[2rem] transition-shadow duration-500 md:flex-row lg:flex-col",
-            "data-[in-cart=true]:shadow-[var(--glass-rim),0_0_0_3px_rgb(57_217_208/0.55),0_0_32px_4px_rgb(57_217_208/0.35),var(--shadow-lift)]",
-            featured && "lg:rounded-[2.4rem] lg:p-3.5"
+            "rounded-[2rem] transition-shadow duration-500 md:flex-row lg:row-span-5 lg:grid lg:grid-rows-subgrid",
+            "data-[in-cart=true]:shadow-[var(--glass-rim),0_0_0_3px_rgb(57_217_208/0.55),0_0_32px_4px_rgb(57_217_208/0.35),var(--shadow-lift)]"
           )}
         >
           {/* Photo inside a glass bezel */}
@@ -65,9 +65,7 @@ export function MenuCard({ item, featured = false, onAdded }: MenuCardProps) {
             ref={figureRef}
             className={cn(
               "relative isolate overflow-hidden rounded-[1.55rem] bg-[linear-gradient(160deg,#d8f5ff,#9fe3fb)]",
-              "aspect-[4/3] md:aspect-auto md:min-h-[19rem] md:w-[46%] md:shrink-0 lg:w-full",
-              featured ? "lg:aspect-[1/1.02]" : "lg:aspect-[4/3.4]",
-              featured && "lg:rounded-[1.9rem]"
+              "aspect-[4/3] md:aspect-auto md:min-h-[19rem] md:w-[46%] md:shrink-0 lg:aspect-[16/11] lg:w-full"
             )}
           >
             <DishImage
@@ -115,23 +113,25 @@ export function MenuCard({ item, featured = false, onAdded }: MenuCardProps) {
             </AnimatePresence>
           </div>
 
-          <CardContent className="flex flex-1 flex-col px-2.5 pt-5 pb-2.5 sm:px-3.5 md:px-6 md:py-6 lg:px-3.5 lg:pt-6 lg:pb-3">
-            <p className="label-caps text-ocean-ink">{item.category}</p>
+          {/* On desktop this wrapper dissolves (display: contents) so its
+              children sit directly in the shared subgrid rows. */}
+          <CardContent className="flex flex-1 flex-col px-2.5 pt-5 pb-2.5 sm:px-3.5 md:px-6 md:py-6 lg:contents">
+            <p className="label-caps text-ocean-ink lg:mx-4 lg:mt-6">{item.category}</p>
             <h2
               id={titleId}
               className={cn(
-                "mt-2 font-heading font-bold tracking-[-0.01em] text-deep",
-                featured ? "text-[1.85rem] lg:text-[2.15rem]" : "text-[1.65rem] lg:text-[1.75rem]",
+                "mt-2 font-heading font-bold tracking-[-0.01em] text-deep lg:mx-4",
+                "text-[1.65rem] lg:text-[1.8rem]",
                 "leading-[1.1]"
               )}
             >
               <DishName name={item.name} />
             </h2>
-            <p className="mt-3 max-w-[46ch] text-[1.02rem] leading-relaxed text-deep-soft">
+            <p className="mt-3 max-w-[46ch] text-[1.02rem] leading-relaxed text-deep-soft lg:mx-4">
               {item.description}
             </p>
 
-            <div className="mt-auto flex min-h-[3.5rem] items-center justify-between gap-3 pt-6">
+            <div className="mt-auto flex min-h-[3.5rem] items-center justify-between gap-3 pt-6 lg:mx-4 lg:mb-2 lg:self-end">
               <p className="tabular font-heading text-[1.75rem] leading-none font-bold text-deep">
                 <span className="sr-only">Price: </span>
                 {formatPrice(item.price)}

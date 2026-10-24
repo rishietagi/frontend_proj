@@ -1,4 +1,6 @@
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
+
+import { useCalmMotion } from "@/hooks/useCalmMotion"
 
 import type { MenuItem } from "@/types/menu"
 
@@ -16,7 +18,7 @@ const SIZE = 76
  * cart button, so it's clear where the item went.
  */
 export function FlyToCart({ flights, onDone }: { flights: Flight[]; onDone: (key: number) => void }) {
-  const reduce = useReducedMotion()
+  const reduce = useCalmMotion()
   if (reduce) return null
 
   return (

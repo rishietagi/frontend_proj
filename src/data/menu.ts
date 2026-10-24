@@ -1,7 +1,7 @@
 import type { MenuItem, MenuItemId } from "@/types/menu"
 
 /**
- * The single source of truth for tonight's menu.
+ * The single source of truth for the lunch menu.
  * Prices are placeholders in whole rupees — change them here and every
  * card, cart line and total updates with them.
  */
@@ -12,19 +12,13 @@ export const MENU: readonly MenuItem[] = [
     category: "To share",
     name: "Veg Crispy Pan-Fried Momos",
     description:
-      "Golden, crispy-bottomed vegetable momos with soft, savoury centres, served with a spicy red dipping chutney. Little pockets of happiness.",
+      "Golden, crispy-bottomed vegetable momos with soft, savoury centres, served with a spicy red dipping chutney.",
     price: 129,
     image: {
       src: "/images/momos-800.webp",
       srcSet: "/images/momos-800.webp 800w, /images/momos-1400.webp 1400w",
       alt: "Golden pan-fried momos with charred, crispy bottoms on a white plate, beside small blue bowls of red chilli chutney.",
       focus: "62% 74%",
-      credit: {
-        photographer: "Sehajpal Singh",
-        profileUrl: "https://unsplash.com/@fujix_pal",
-        source: "Unsplash",
-        photoUrl: "https://unsplash.com/photos/a-plate-of-food-on-a-wooden-table-ZT9wGLDEVNs",
-      },
     },
   },
   {
@@ -40,12 +34,6 @@ export const MENU: readonly MenuItem[] = [
       srcSet: "/images/tofu-bowl-800.webp 800w, /images/tofu-bowl-1400.webp 1400w",
       alt: "Golden tofu glazed in a glossy red-orange sauce with spring onions, resting on a bowl of fluffy white rice.",
       focus: "38% 58%",
-      credit: {
-        photographer: "Anya Dunes",
-        profileUrl: "https://www.pexels.com/@anya-dunes-2153945617/",
-        source: "Pexels",
-        photoUrl: "https://www.pexels.com/photo/delicious-spicy-tofu-with-rice-in-a-bowl-35064908/",
-      },
     },
   },
   {
@@ -54,7 +42,7 @@ export const MENU: readonly MenuItem[] = [
     category: "The finale",
     name: "Cookie Dough & Ice Cream",
     description:
-      "Chocolate-chip cookie dough meets a scoop of creamy vanilla ice cream. The perfect sweet ending. Obviously.",
+      "Chocolate-chip cookie dough meets a scoop of creamy vanilla ice cream. A warm, gooey finish.",
     price: 149,
     image: {
       src: "/images/dessert-cookie-skillet.webp",
@@ -65,7 +53,7 @@ export const MENU: readonly MenuItem[] = [
   },
 ]
 
-/** Home-cooked portions: one kitchen, one chef, a sensible ceiling. */
+/** Home-cooked portions: one kitchen, one cook, a sensible ceiling. */
 export const MAX_QUANTITY = 10
 
 const byId = new Map(MENU.map((item) => [item.id, item]))

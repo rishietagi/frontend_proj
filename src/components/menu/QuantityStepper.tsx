@@ -80,8 +80,8 @@ export function QuantityStepper({
         className={stepButton}
         onClick={onIncrement}
         disabled={atMax}
-        aria-label={atMax ? `${name}: ${MAX_QUANTITY} is the most Rishi can make tonight` : `One more ${name}`}
-        title={atMax ? `${MAX_QUANTITY} is the most Rishi can make tonight` : undefined}
+        aria-label={atMax ? `${name}: ${MAX_QUANTITY} is the most Rishi can make today` : `One more ${name}`}
+        title={atMax ? `${MAX_QUANTITY} is the most Rishi can make today` : undefined}
       >
         <Plus className="size-5" aria-hidden="true" />
       </button>

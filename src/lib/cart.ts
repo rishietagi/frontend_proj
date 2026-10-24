@@ -2,6 +2,7 @@ import { MAX_QUANTITY, getMenuItem, isMenuItemId } from "@/data/menu"
 import type { CartLine, CartLineDetail, MenuItemId, OrderSnapshot } from "@/types/menu"
 
 export const CART_STORAGE_KEY = "rishis-kitchen:cart:v1"
+export const DISCOUNT_STORAGE_KEY = "rishis-kitchen:discount:v1"
 
 export type CartAction =
   | { type: "add"; id: MenuItemId }
@@ -76,8 +77,26 @@ export function saveCart(lines: CartLine[]) {
   }
 }
 
+export function loadDiscount(): number {
+  try {
+    const value = Number(window.localStorage.getItem(DISCOUNT_STORAGE_KEY))
+    return value === 100 ? 100 : 0
+  } catch {
+    return 0
+  }
+}
+
+export function saveDiscount(percent: number) {
+  try {
+    if (percent > 0) window.localStorage.setItem(DISCOUNT_STORAGE_KEY, String(percent))
+    else window.localStorage.removeItem(DISCOUNT_STORAGE_KEY)
+  } catch {
+    // Same as the cart: fine to keep it in memory only.
+  }
+}
+
 /** Every price shown anywhere is derived here, from menu data × quantity. */
-export function describeCart(lines: CartLine[]) {
+export function describeCart(lines: CartLine[], discountPercent = 0) {
   const details: CartLineDetail[] = []
   for (const line of lines) {
     const item = getMenuItem(line.id)
@@ -86,13 +105,22 @@ export function describeCart(lines: CartLine[]) {
   }
   const itemCount = details.reduce((sum, line) => sum + line.quantity, 0)
   const subtotal = details.reduce((sum, line) => sum + line.lineTotal, 0)
-  return { lines: details, itemCount, subtotal, total: subtotal }
+  const percent = Math.min(100, Math.max(0, discountPercent))
+  const discountAmount = Math.round((subtotal * percent) / 100)
+  return {
+    lines: details,
+    itemCount,
+    subtotal,
+    discountPercent: percent,
+    discountAmount,
+    total: subtotal - discountAmount,
+  }
 }
 
-export function createOrderSnapshot(lines: CartLine[]): OrderSnapshot | null {
-  const { lines: details, itemCount, total } = describeCart(lines)
-  if (itemCount === 0) return null
+export function createOrderSnapshot(lines: CartLine[], discountPercent = 0): OrderSnapshot | null {
+  const summary = describeCart(lines, discountPercent)
+  if (summary.itemCount === 0) return null
   const now = new Date()
   const reference = `RK-${String(now.getTime() % 10000).padStart(4, "0")}`
-  return { reference, placedAt: now.toISOString(), lines: details, itemCount, total }
+  return { reference, placedAt: now.toISOString(), ...summary }
 }

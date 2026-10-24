@@ -2,6 +2,9 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Short viewports (small phones, landscape): compact layouts */
+@custom-variant short (@media (max-height: 760px));
+
 /* ─────────────────────────────────────────────────────────────
    Rishi's Kitchen — "Kitchen Aquarium" design system
    Frutiger Aero, rebuilt with layered glass, gel and water.
@@ -100,6 +103,10 @@
   --ease-in-soft: cubic-bezier(0.55, 0, 0.75, 0.2);
   --dur-press: 120ms;
   --dur-hover: 220ms;
+
+  /* Fluid layout */
+  --gutter: clamp(1rem, 0.4rem + 2.6vw, 3.5rem);
+  --shell: 80rem;
 }
 
 @layer base {
@@ -108,6 +115,8 @@
   }
   html {
     @apply font-sans;
+    /* Fluid scale: every rem-based size grows smoothly from phone to wide desktop */
+    font-size: clamp(100%, 0.84rem + 0.22vw, 118.75%);
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -117,6 +126,9 @@
     @apply text-foreground;
     min-height: 100dvh;
     overflow-x: hidden;
+    /* No grey flash or accidental text selection on long-press in iOS / Android */
+    -webkit-touch-callout: none;
+    overscroll-behavior-y: none;
     font-size: 1.0625rem;
     line-height: 1.6;
     background: transparent;
@@ -151,6 +163,14 @@
 
 /* ─────────────── Glass surfaces ─────────────── */
 @layer components {
+  /* One container for header and content, so their edges always line up */
+  .shell {
+    /* Never closer to the edge than the notch / rounded corners in landscape */
+    --edge: max(var(--gutter), env(safe-area-inset-left), env(safe-area-inset-right));
+    width: min(100% - 2 * var(--edge), var(--shell));
+    margin-inline: auto;
+  }
+
   /* The primary pane: layered gradients, a specular top sheen, a rim,
      and a soft cast shadow. Blur is used sparingly, only on panes. */
   .aero-glass {
@@ -425,6 +445,182 @@
   }
 }
 
+/* ─────────────── Wordle discount game ─────────────── */
+@layer components {
+  .wordle-tile {
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.92), rgb(226 247 255 / 0.72));
+    border: 2px solid rgb(8 102 168 / 0.14);
+    box-shadow:
+      inset 0 1px 0 #fff,
+      inset 0 -2px 4px rgb(117 216 255 / 0.2),
+      0 4px 10px -6px rgb(8 92 150 / 0.4);
+    transition: border-color 150ms ease;
+  }
+  .wordle-filled {
+    border-color: rgb(8 102 168 / 0.5);
+  }
+  /* Result faces: gel with a specular top half */
+  .wordle-correct,
+  .wordle-present,
+  .wordle-absent {
+    border: 1px solid var(--tone-edge);
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 0.55), rgb(255 255 255 / 0.08) 48%, transparent 50%),
+      linear-gradient(180deg, var(--tone-a), var(--tone-b));
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.75),
+      inset 0 -3px 6px var(--tone-glow),
+      0 4px 10px -5px rgb(8 92 150 / 0.45);
+    color: var(--deep-blue);
+  }
+  .wordle-correct {
+    --tone-a: #8ff0bb;
+    --tone-b: #34c47c;
+    --tone-glow: rgb(220 255 200 / 0.7);
+    --tone-edge: rgb(20 120 80 / 0.45);
+  }
+  .wordle-present {
+    --tone-a: #ffe58a;
+    --tone-b: #f2b52c;
+    --tone-glow: rgb(255 248 200 / 0.75);
+    --tone-edge: rgb(160 110 10 / 0.45);
+  }
+  .wordle-absent {
+    --tone-a: #d5e1ea;
+    --tone-b: #a3b6c5;
+    --tone-glow: rgb(255 255 255 / 0.5);
+    --tone-edge: rgb(60 90 115 / 0.35);
+  }
+  .wordle-key {
+    border-radius: 0.75rem;
+    color: var(--deep-blue);
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.95), rgb(220 244 255 / 0.8));
+    border: 1px solid rgb(255 255 255 / 0.9);
+    box-shadow:
+      inset 0 1px 0 #fff,
+      0 0 0 1px rgb(8 102 168 / 0.14),
+      0 3px 6px -3px rgb(8 92 150 / 0.4);
+    transition: transform 100ms ease, filter 150ms ease;
+  }
+  .wordle-key:not(:disabled):active {
+    transform: translateY(1px) scale(0.94);
+  }
+  @media (hover: hover) {
+    .wordle-key:not(:disabled):hover {
+      filter: brightness(1.04);
+    }
+  }
+  .wordle-key:disabled {
+    opacity: 0.7;
+    cursor: default;
+  }
+}
+
+/* ─────────────── Loader: water orb + Vista progress bar ─────────────── */
+@layer components {
+  .loader-orb {
+    background:
+      radial-gradient(circle at 50% 50%, rgb(255 255 255 / 0.05) 55%, rgb(117 216 255 / 0.35) 78%, rgb(255 255 255 / 0.9) 100%);
+    box-shadow:
+      inset 0 -12px 30px rgb(57 217 208 / 0.3),
+      inset 0 0 0 1.5px rgb(255 255 255 / 0.7),
+      0 24px 50px -18px rgb(8 92 150 / 0.55);
+    -webkit-backdrop-filter: blur(4px) saturate(150%);
+    backdrop-filter: blur(4px) saturate(150%);
+  }
+  .wave-scroll {
+    animation: wave-scroll var(--wave-dur, 2.4s) linear infinite;
+  }
+  @keyframes wave-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  .orb-bubble {
+    animation: orb-bubble var(--dur, 2.2s) ease-in var(--delay, 0s) infinite;
+  }
+  @keyframes orb-bubble {
+    0% {
+      transform: translateY(0) scale(0.6);
+      opacity: 0;
+    }
+    15% {
+      opacity: 0.9;
+    }
+    100% {
+      transform: translateY(-120px) scale(1);
+      opacity: 0;
+    }
+  }
+
+  /* Vista-era progress bar: inset glass track, green gel fill, travelling pulse */
+  .vista-track {
+    background: linear-gradient(180deg, rgb(208 228 240 / 0.9), rgb(245 252 255 / 0.95));
+    border: 1px solid rgb(8 92 150 / 0.35);
+    box-shadow:
+      inset 0 2px 4px rgb(16 59 89 / 0.25),
+      0 1px 0 rgb(255 255 255 / 0.9);
+  }
+  .vista-fill {
+    background:
+      linear-gradient(180deg, rgb(255 255 255 / 0.65), rgb(255 255 255 / 0.15) 48%, transparent 52%),
+      linear-gradient(180deg, #a6f5a0 0%, #4fd46a 50%, #26b14a 52%, #3fd062 100%);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.8),
+      inset 0 -1px 2px rgb(255 255 255 / 0.4);
+  }
+  .vista-pulse {
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.75), transparent);
+    animation: vista-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes vista-pulse {
+    from {
+      transform: translateX(-120%);
+    }
+    to {
+      transform: translateX(320%);
+    }
+  }
+
+  /* Meadow scene on the welcome screen */
+  .cloud-drift {
+    animation: cloud-drift var(--drift, 90s) ease-in-out infinite alternate;
+  }
+  @keyframes cloud-drift {
+    from {
+      transform: translate3d(-3vw, 0, 0);
+    }
+    to {
+      transform: translate3d(4vw, -0.6vh, 0);
+    }
+  }
+  .flare-pulse {
+    animation: flare-pulse 7s ease-in-out infinite alternate;
+  }
+  @keyframes flare-pulse {
+    from {
+      opacity: 0.55;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .lake-shimmer {
+    animation: lake-shimmer 9s linear infinite;
+  }
+  @keyframes lake-shimmer {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-120px);
+    }
+  }
+}
+
 /* ─────────────── Atmosphere ─────────────── */
 @layer components {
   .bubble {
@@ -588,30 +784,35 @@
   outline-offset: 3px;
 }
 
-/* Calm everything continuous for people who ask for less motion */
+/* Calm everything continuous for people who ask for less motion.
+   Only active when the app opts in (see RESPECT_REDUCED_MOTION in lib/motion.ts),
+   which adds .respect-reduced-motion to <html>. */
 @media (prefers-reduced-motion: reduce) {
-  .bubble,
-  .light-rays,
-  .swoosh,
-  .caustics,
-  .glint,
-  .float-slow,
-  .leaf-sway {
-    animation: none !important;
-  }
-  .bubble {
-    bottom: auto;
-    top: var(--rest-top, 50%);
-  }
-  .glint {
-    opacity: 0.6;
-  }
-  .aero-gel::after {
-    display: none;
-  }
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
+  .respect-reduced-motion {
+    .bubble,
+    .light-rays,
+    .swoosh,
+    .caustics,
+    .glint,
+    .float-slow,
+    .leaf-sway,
+    .wave-scroll,
+    .orb-bubble,
+    .vista-pulse,
+    .cloud-drift,
+    .flare-pulse,
+    .lake-shimmer {
+      animation: none !important;
+    }
+    .bubble {
+      bottom: auto;
+      top: var(--rest-top, 50%);
+    }
+    .glint {
+      opacity: 0.6;
+    }
+    .aero-gel::after {
+      display: none;
+    }
   }
 }

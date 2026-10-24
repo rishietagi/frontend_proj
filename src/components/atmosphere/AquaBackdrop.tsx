@@ -1,12 +1,18 @@
+import { motion } from "motion/react"
+
 import { FloatingBubbles } from "./FloatingBubbles"
 import { Glints } from "./Glints"
+import { MeadowScene } from "./MeadowScene"
+
+export type BackdropScene = "aqua" | "meadow"
 
 /**
  * The fixed environment behind every screen: a sunlit sky that deepens
  * into water, slow light rays, Aero light ribbons, caustic shimmer near
  * the bottom, and bubbles rising at three depths.
  */
-export function AquaBackdrop() {
+export function AquaBackdrop({ scene = "aqua" }: { scene?: BackdropScene }) {
+  const meadow = scene === "meadow"
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       {/* Sky → water gradient with soft aurora pools */}
@@ -23,8 +29,24 @@ export function AquaBackdrop() {
         }}
       />
 
+      {/* Welcome-screen landscape, cross-faded in over the water */}
+      <motion.div
+        className="absolute inset-0"
+        initial={false}
+        animate={{ opacity: meadow ? 1 : 0 }}
+        transition={{ duration: 0.9, ease: "easeInOut" }}
+      >
+        <MeadowScene />
+      </motion.div>
+
       <div className="light-rays" />
 
+      <motion.div
+        className="absolute inset-0"
+        initial={false}
+        animate={{ opacity: meadow ? 0 : 1 }}
+        transition={{ duration: 0.9, ease: "easeInOut" }}
+      >
       {/* Aero light ribbons */}
       <svg
         className="swoosh absolute inset-x-[-5%] top-[18%] h-[70%] w-[110%]"
@@ -79,6 +101,7 @@ export function AquaBackdrop() {
         </filter>
         <rect width="100%" height="100%" filter="url(#caustic)" />
       </svg>
+      </motion.div>
 
       <FloatingBubbles />
 

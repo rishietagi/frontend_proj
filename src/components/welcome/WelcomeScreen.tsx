@@ -19,7 +19,7 @@ export function WelcomeScreen({ onOrder, savedCount, focusOnMount }: WelcomeScre
   return (
     <main
       id="main"
-      className="relative flex min-h-dvh items-center justify-center px-4 py-16 sm:px-8"
+      className="relative flex min-h-dvh items-center justify-center overflow-x-clip px-4 py-16 sm:px-8"
     >
       {/* Greenery peeking in from the corners */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -90,7 +90,7 @@ export function WelcomeScreen({ onOrder, savedCount, focusOnMount }: WelcomeScre
               variants={riseIn}
               className="aero-chip label-caps rounded-2xl px-4 py-2 text-[0.7rem] leading-snug text-ocean-ink sm:rounded-full sm:text-[0.78rem]"
             >
-              <span>Your private dinner experience</span>
+              <span>Private lunch</span>
               <span className="max-sm:hidden"> · </span>
               <span className="max-sm:block">Est. today</span>
             </motion.p>
@@ -123,16 +123,13 @@ export function WelcomeScreen({ onOrder, savedCount, focusOnMount }: WelcomeScre
               variants={riseIn}
               className="mt-6 max-w-[34ch] text-[1.1rem] leading-relaxed text-deep-soft sm:mt-7 sm:text-[1.25rem]"
             >
-              A little something made with love, a little sauce, and a lot of good intentions.
+              Home-cooked, made to order, and served hot.
             </motion.p>
 
             <motion.div variants={riseIn} className="mt-9 flex flex-col items-center gap-4 sm:mt-10">
               <Button variant="gel" size="hero" onClick={onOrder}>
                 Order Food
               </Button>
-              <p className="text-[0.98rem] font-medium text-deep-soft">
-                Freshly made. Very lovingly served.
-              </p>
               {savedCount > 0 && (
                 <p className="aero-chip rounded-full px-4 py-1.5 text-sm font-semibold text-ocean-ink">
                   {pluralItems(savedCount)} still waiting in your order

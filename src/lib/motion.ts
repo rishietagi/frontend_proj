@@ -1,5 +1,13 @@
 import type { Transition, Variants } from "motion/react"
 
+/**
+ * Whether to honour the OS "reduce motion" setting (Windows: Settings →
+ * Accessibility → Visual effects → Animation effects). Off by request, so
+ * the full animated experience always plays. Set to true to calm ambient
+ * motion and transitions for people who turn animations off.
+ */
+export const RESPECT_REDUCED_MOTION = false
+
 /** Shared motion tokens: one rhythm for the whole experience. */
 export const spring = { type: "spring", stiffness: 260, damping: 26, mass: 0.9 } as const
 export const springSnappy = { type: "spring", stiffness: 520, damping: 30 } as const

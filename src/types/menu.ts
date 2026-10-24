@@ -1,12 +1,5 @@
 export type MenuItemId = "momos" | "tofu-bowl" | "cookie-dough"
 
-export interface PhotoCredit {
-  photographer: string
-  profileUrl: string
-  source: "Unsplash" | "Pexels"
-  photoUrl: string
-}
-
 export interface MenuImage {
   /** Default (smaller) source, also the fallback for browsers without srcset */
   src: string
@@ -14,8 +7,6 @@ export interface MenuImage {
   alt: string
   /** CSS object-position that keeps the food in frame for each crop */
   focus: string
-  /** Omitted for photos supplied directly, without a known source */
-  credit?: PhotoCredit
 }
 
 export interface MenuItem {
@@ -45,5 +36,9 @@ export interface OrderSnapshot {
   placedAt: string
   lines: CartLineDetail[]
   itemCount: number
+  subtotal: number
+  /** 0–100 */
+  discountPercent: number
+  discountAmount: number
   total: number
 }

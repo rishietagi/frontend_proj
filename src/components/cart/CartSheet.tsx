@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
-import { LoaderCircle, Soup } from "lucide-react"
+import { BadgeCheck, Soup, TicketPercent } from "lucide-react"
+
+import { WordleDialog } from "@/components/discount/WordleDialog"
 
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -25,30 +27,35 @@ interface CartSheetProps {
   onPlaceOrder: () => boolean
 }
 
-const PLACING_DELAY = 750
-
 export function CartSheet({ open, onOpenChange, onPlaceOrder }: CartSheetProps) {
-  const { lines, itemCount, subtotal, total, increment, decrement, remove } = useCart()
+  const {
+    lines,
+    itemCount,
+    subtotal,
+    discountPercent,
+    discountAmount,
+    total,
+    increment,
+    decrement,
+    remove,
+    applyDiscount,
+  } = useCart()
+  const [gameOpen, setGameOpen] = useState(false)
   const [placing, setPlacing] = useState(false)
   const placingRef = useRef(false)
-  const timer = useRef<number | undefined>(undefined)
-
-  useEffect(() => () => window.clearTimeout(timer.current), [])
 
   const empty = itemCount === 0
+  const discounted = discountPercent > 0
 
   const handlePlaceOrder = () => {
     // Guard against double-clicks and repeated key presses.
     if (placingRef.current || empty) return
     placingRef.current = true
     setPlacing(true)
-    timer.current = window.setTimeout(() => {
-      const placed = onPlaceOrder()
-      if (!placed) {
-        placingRef.current = false
-        setPlacing(false)
-      }
-    }, PLACING_DELAY)
+    if (!onPlaceOrder()) {
+      placingRef.current = false
+      setPlacing(false)
+    }
   }
 
   return (
@@ -67,12 +74,12 @@ export function CartSheet({ open, onOpenChange, onPlaceOrder }: CartSheetProps) 
             "radial-gradient(90% 40% at 0% 0%, rgb(255 255 255 / 0.85), transparent 70%), linear-gradient(180deg, rgb(244 253 255 / 0.94), rgb(214 245 255 / 0.9) 60%, rgb(196 244 236 / 0.9))",
         }}
       >
-        <SheetHeader className="px-6 pt-7 pb-4 sm:px-7">
+        <SheetHeader className="px-6 pt-[max(1.75rem,env(safe-area-inset-top))] pb-4 sm:px-7">
           <SheetTitle className="font-heading text-[2rem] leading-none font-extrabold tracking-tight text-deep">
             Your cart
           </SheetTitle>
           <SheetDescription className="mt-1.5 text-[1rem] text-deep-soft">
-            {empty ? "Nothing here yet." : `${pluralItems(itemCount)} picked for tonight.`}
+            {empty ? "Nothing here yet." : `${pluralItems(itemCount)} so far.`}
           </SheetDescription>
         </SheetHeader>
 
@@ -104,10 +111,21 @@ export function CartSheet({ open, onOpenChange, onPlaceOrder }: CartSheetProps) 
                   <dt>Subtotal</dt>
                   <dd className="font-semibold text-deep">{formatPrice(subtotal)}</dd>
                 </div>
-                <div className="flex justify-between text-deep-soft">
-                  <dt>Table service</dt>
-                  <dd className="font-semibold text-leaf-ink">On the house</dd>
-                </div>
+                <AnimatePresence initial={false}>
+                  {discounted && (
+                    <motion.div
+                      key="discount"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.35 }}
+                      className="flex justify-between overflow-hidden text-leaf-ink"
+                    >
+                      <dt className="font-semibold">Discount availed ({discountPercent}%)</dt>
+                      <dd className="font-bold">−{formatPrice(discountAmount)}</dd>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 <Separator className="aero-rule my-3" />
                 <div className="flex items-baseline justify-between">
                   <dt className="font-heading text-xl font-bold text-deep">Total</dt>
@@ -128,22 +146,35 @@ export function CartSheet({ open, onOpenChange, onPlaceOrder }: CartSheetProps) 
                 </div>
               </dl>
 
+              {discounted ? (
+                <p className="aero-chip mt-4 flex h-12 items-center justify-center gap-2 rounded-2xl text-[0.98rem] font-bold text-leaf-ink">
+                  <BadgeCheck className="size-5" aria-hidden="true" />
+                  Bill&rsquo;s on the house today
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setGameOpen(true)}
+                  className="aero-chip mt-4 flex h-12 w-full items-center justify-between gap-3 rounded-2xl pr-4 pl-3 text-left transition-transform active:scale-[0.98]"
+                >
+                  <span className="flex items-center gap-2.5">
+                    <span className="aero-gel aero-gel--green grid size-8 place-items-center rounded-full">
+                      <TicketPercent className="size-[1.1rem]" aria-hidden="true" />
+                    </span>
+                    <span className="font-heading text-[1.05rem] font-bold text-deep">Avail discount</span>
+                  </span>
+                  <span className="text-[0.9rem] font-medium text-ocean-ink">Play a word game</span>
+                </button>
+              )}
+
               <Button
                 variant="gel"
                 size="pill"
-                className="mt-4 h-14 w-full text-[1.2rem] sm:mt-5"
+                className="mt-3 h-14 w-full text-[1.2rem]"
                 onClick={handlePlaceOrder}
                 disabled={placing}
-                aria-disabled={placing}
               >
-                {placing ? (
-                  <>
-                    <LoaderCircle className="animate-spin" aria-hidden="true" />
-                    Placing order…
-                  </>
-                ) : (
-                  "Place Order"
-                )}
+                Place Order
               </Button>
               <SheetClose asChild>
                 <Button variant="glass" size="pill" className="mt-2.5 w-full" disabled={placing}>
@@ -153,6 +184,8 @@ export function CartSheet({ open, onOpenChange, onPlaceOrder }: CartSheetProps) 
             </SheetFooter>
           </>
         )}
+        {/* Nested inside the sheet's content so Radix treats it as a child layer */}
+        <WordleDialog open={gameOpen} onOpenChange={setGameOpen} onWin={() => applyDiscount(100)} />
       </SheetContent>
     </Sheet>
   )
@@ -166,7 +199,7 @@ function EmptyCart() {
       </div>
       <p className="mt-7 font-heading text-2xl font-bold text-deep">Your cart is empty</p>
       <p className="mt-2 max-w-[28ch] text-deep-soft">
-        Add a dish from tonight&rsquo;s menu and it will appear here.
+        Add a dish from the menu and it will appear here.
       </p>
       <SheetClose asChild>
         <Button variant="gel-green" size="pill" className="mt-7">
